@@ -2,10 +2,10 @@ import HaxballJS from 'haxball.js';
 import { readFile } from 'fs/promises';
 import { I18n } from 'i18n-js';
 
-const HEADLESS_TOKEN = 'thr1.AAAAAGoxSQuGFu3FQw2vHg.piKrKFMzNc4';
+const HEADLESS_TOKEN = 'thr1.AAAAAGoxtexMDkPN9t-yeA.McYUbIggpgE';
 
 // Game mode configuration
-const TEAM_SIZE = 1;
+const TEAM_SIZE = 2;
 const STARTING_MATCHES_COUNT = 1;
 const MINIMUM_PLAYERS = TEAM_SIZE * STARTING_MATCHES_COUNT * 2;
 
@@ -141,7 +141,7 @@ class CancelEvent extends EventTarget {
         super();
         this.threshold = threshold;
     }
-    
+
     connect(callback) {
         this.addEventListener('cancel', callback);
     }
@@ -188,7 +188,7 @@ HaxballJS().then((HBInit) => {
                 break;
             }
         }
-        
+
         if (targetTeamId) {
             players[targetTeamId].push(playerId);
             room.setPlayerTeam(playerId, targetTeamId);
@@ -228,6 +228,11 @@ HaxballJS().then((HBInit) => {
         return team.metadata.name[style]();
     };
 
+    const getRandomTeam = () => {
+        const availableTeams = getAvailableTeams();
+        return availableTeams[Math.floor(Math.random() * availableTeams.length)];
+    }
+
     const getPrimaryKitColor = (teamName) => {
         const data = kitData.teams[teamName];
         if (data) return parseInt(data.discColors[data.discColors.length - 1], 16);
@@ -257,7 +262,7 @@ HaxballJS().then((HBInit) => {
             if (match.length > 2) resultMessage = `VENCEDOR: ${getTeamName(result.winner)} POR ${result.maxScore} A ${result.minScore}`;
             else if (index === currentMatchIndex) resultMessage = 'EM PROGRESSO...';
             else resultMessage = 'AINDA POR VIR...';
-            
+
             return `[${index + 1}] ${getTeamName(red)} x ${getTeamName(blue)}` + ' | ' + resultMessage;
         }).join('\n');
     };
@@ -291,7 +296,7 @@ HaxballJS().then((HBInit) => {
     };
 
     let gameInProgress = false;
-    const startMatch = async () => {
+    const startMatch = async (customRoundName) => {
         if (gameInProgress) return;
         gameInProgress = true;
 
@@ -300,23 +305,24 @@ HaxballJS().then((HBInit) => {
         if (currentMatchIndex >= matches.length) champion = getNextRound();
 
         if (matches.length > 0) {
-            sendAnnouncement(`[${getRoundName()}]`);
+            sendAnnouncement(`[${customRoundName || getRoundName()}]`);
         } else {
             sendAnnouncement(addLines(`O CAMPEÃO ABSOLUTO DA COPA DO MUNDO: ${getTeamName(champion)}!`), null, 'DEFAULT', getPrimaryKitColor(champion.metadata.name));
 
             await sleep(MATCH_INTERMISSION);
 
             reset();
+            update('RECOMEÇANDO, ESTÁ PREPARADO?')
 
             return;
         }
-        
+
         const match = matches[currentMatchIndex];
         for (let i = 0; i < 2; i++) {
             const team = match[i];
 
             setKit(i + 1, team.metadata.name);
-            
+
             for (const playerId of team.players) {
                 changePlayerTeam(playerId, i + 1);
             }
@@ -324,12 +330,12 @@ HaxballJS().then((HBInit) => {
 
         const red = match[0];
         const blue = match[1];
-        
+
         const announcementText = `EM ${i18n.t('seconds', { count: MATCH_INTERMISSION })}, VEM AÍ ${getTeamName(red)} x ${getTeamName(blue)}!`;
         sendAnnouncement(addLines(announcementText));
 
         await sleep(MATCH_INTERMISSION);
-        
+
         room.startGame();
     };
 
@@ -353,15 +359,72 @@ HaxballJS().then((HBInit) => {
         match.push({ winner, maxScore, minScore });
 
         sendAnnouncement(addLines(`${getTeamName(winner)} VENCEU ${getTeamName(loser)} POR ${maxScore} a ${minScore}!`));
-                
+
         startMatch();
     };
 
+    const configureFallbackMode = () => {
+        const targetTeamSize = Math.min(Math.floor(getPlayerCount()/2), 3);
+        if (targetTeamSize < 1 || players[0].length % 2 !== 0) return;
+
+        const plrs = [
+            [...players[1]],
+            [...players[2]]
+        ];
+
+        let teamIndex = 0;
+        let specIndex = 0;
+        while (Math.min(plrs[0].length, plrs[1].length) < targetTeamSize) {
+            if (specIndex >= players[0].length) break;
+            const spec = players[0][specIndex];
+
+            plrs[teamIndex].push(spec);
+
+            teamIndex = teamIndex === 0 ? 1 : 0;
+            specIndex++;
+        }
+
+        if (matches.length === 0 || specIndex > 0) {
+            const redKit = getRandomTeam();
+            selected_teams.add(redKit.toLowerCase());
+
+            const blueKit = getRandomTeam();
+            selected_teams.add(blueKit.toLowerCase());
+
+            matches[0] = [
+                { players: plrs[0], captain: plrs[0][0], metadata: { name: redKit } },
+                { players: plrs[1], captain: plrs[1][0], metadata: { name: blueKit } }
+            ];
+            currentMatchIndex = -1;
+
+            startMatch();
+        }
+        else {
+            matches[0][0].players = plrs[0];
+            matches[0][1].players = plrs[1];
+
+            for (let i = 0; i < 2; i++) {
+                for (const playerId of matches[0][i].players) changePlayerTeam(playerId, i + 1);
+            }
+        }
+
+        team_by_player.clear();
+        for (let i = 0; i < 2; i++) {
+            for (const playerId of matches[0][i].players) team_by_player.set(playerId, matches[0][i]);
+        }
+    };
+
     const canVoteForCaptain = () => TEAM_SIZE >= 1;
-    
+
     const update = async (startMessage = `A COPA DO MUNDO VAI COMEÇAR! ESPERE PARA CONFIGURAR O SEU TIME...`) => {
         const playersLeft = MINIMUM_PLAYERS - getPlayerCount();
-        if (playersLeft > 0) return sendAnnouncement(`${i18n.t('playersLeft', { count: playersLeft })} PARA COMEÇAR, AGUARDE...`, null, 'INFORMATION');
+        if (playersLeft > 0) {
+            configureFallbackMode();
+
+            return sendAnnouncement(`${i18n.t('playersLeft', { count: playersLeft })} PARA COMEÇAR A COPA, AGUARDE...`, null, 'INFORMATION');
+        }
+
+        reset();
 
         sendAnnouncement(startMessage, null, 'INSTRUCTION');
         await sleep(MATCH_INTERMISSION);
@@ -393,7 +456,7 @@ HaxballJS().then((HBInit) => {
                     const playerObject = room.getPlayer(playerId);
                     announcementText += `[id: ${i + 1}] ${playerObject.name}\n`;
                 }
-    
+
                 for (const playerId of team.players) {
                     sendAnnouncement(announcementText, playerId, 'INFORMATION');
                 }
@@ -417,8 +480,8 @@ HaxballJS().then((HBInit) => {
             const captainName = room.getPlayer(team.captain).name;
             for (const playerId of team.players) {
                 const captainText = playerId === team.captain
-                ? 'VOCẼ'
-                : captainName;
+                    ? 'VOCẼ'
+                    : captainName;
                 sendAnnouncement(`O CAPITÃO DO SEU TIME É ${captainText}!`, playerId);
             }
         }
@@ -428,7 +491,7 @@ HaxballJS().then((HBInit) => {
                 if (playerId === team.captain) {
                     const availableTeams = getAvailableTeams();
                     sendAnnouncement('SELEÇÕES DISPONÍVEIS:\n' + convertToGrid(availableTeams), playerId, 'INFORMATION');
-                    
+
                     sendAnnouncement(`ESCOLHA UMA SELEÇÃO USANDO O COMANDO !${COMMANDS.SELECT_TEAM} <nome>\nVOCÊ TEM ${i18n.t('seconds', { count: TEAM_CONFIG_TIME })}!`, playerId, 'INSTRUCTION');
                 } else {
                     sendAnnouncement('ESPERE O CAPITÃO ESCOLHER UMA SELEÇÃO...', playerId, 'INSTRUCTION');
@@ -451,17 +514,17 @@ HaxballJS().then((HBInit) => {
                     sendAnnouncement('NENHUMA SELEÇÃO FOI ESCOLHIDA, UMA SERÁ ESCOLHIDA AUTOMATICAMENTE...', playerId, 'INFORMATION');
                 }
 
-                const availableTeams = getAvailableTeams();
-                team.metadata.name = availableTeams[Math.floor(Math.random() * availableTeams.length)];
-                selected_teams.add(team.metadata.name.toLowerCase());
+                const randomTeam = getRandomTeam();
+                team.metadata.name = randomTeam;
+                selected_teams.add(randomTeam.toLowerCase());
             }
 
             const teamName = getTeamName(team);
             for (let i = 0; i < teams.length; i++) {
                 const text = i === configuringTeamIndex
-                ? `SUA SELEÇÃO É ${teamName}! RUMO AO TÍTULO!`
-                : `${teamName} ENTROU NO CAMPEONATO! FIQUE ESPERTO!`;
-                
+                    ? `SUA SELEÇÃO É ${teamName}! RUMO AO TÍTULO!`
+                    : `${teamName} ENTROU NO CAMPEONATO! FIQUE ESPERTO!`;
+
                 for (const playerId of teams[i].players) {
                     sendAnnouncement(text, playerId);
                 }
@@ -497,8 +560,6 @@ HaxballJS().then((HBInit) => {
 
         room.stopGame();
         clearAllTeams();
-
-        update('RECOMEÇANDO, ESTÁ PREPARADO?')
     };
 
     room.onPlayerJoin = ({ id: playerId }) => {
@@ -515,7 +576,7 @@ HaxballJS().then((HBInit) => {
 
     const kickArray = [];
     room.onPlayerBallKick = (playerObject) => {
-        kickArray.unshift({ playerId: playerObject.id, playerName: playerObject.name });
+        kickArray.unshift({ id: playerObject.id, name: playerObject.name });
         if (kickArray.length > 2) {
             kickArray.pop();
         }
@@ -523,19 +584,23 @@ HaxballJS().then((HBInit) => {
 
     room.onTeamGoal = (teamId) => {
         const [ goalScorer, assister ] = kickArray;
-        const [ teamScorer, teamAssister ] = kickArray.map(id => team_by_player.get(id));
-        
+        const [ teamScorer, teamAssister ] = kickArray.map(({ id }) => team_by_player.get(id));
+
         const favoredTeam = matches[currentMatchIndex][teamId - 1];
         const kitColor = getPrimaryKitColor(favoredTeam.metadata.name);
 
-        console.log(favoredTeam, goalScorer, assister, teamScorer, teamAssister)
-        
         if (favoredTeam == teamScorer) {
-            // pro goal or something similar
-            
-            sendAnnouncement(``, null, 'DEFAULT', kitColor);
+            // pro goal
+
+            const goalMessage = `GOL DE ${goalScorer.name} PARA ${getTeamName(favoredTeam)}!`;
+            const assistMessage = goalScorer.id !== assister.id && teamScorer === teamAssister
+                ? `\nASSISTÊNCIA DE ${assister.name}!`
+                : '';
+
+            sendAnnouncement(goalMessage + assistMessage, null, 'DEFAULT', kitColor);
         } else {
             // own goal
+            sendAnnouncement(`GOL CONTRA DE ${goalScorer.name}! MELHOR PARA ${getTeamName(favoredTeam)}`, null, 'DEFAULT', kitColor);
         }
     };
 
@@ -564,7 +629,7 @@ HaxballJS().then((HBInit) => {
 
         if (command == COMMANDS.VOTE_CAPTAIN) {
             if (!canVoteForCaptain()) return 'Não é possível votar em um capitão';
-            
+
             const team = team_by_player.get(playerId);
             if (!team) return 'Você não faz parte de um time no momento';
 
@@ -574,24 +639,24 @@ HaxballJS().then((HBInit) => {
 
             const index = Number(args[0]) - 1;
             if (index < 0 || index >= team.players.length) return 'Id fora dos limites da lista de jogadores do time';
-            
+
             team.metadata.captainVotes[index]++;
             has_voted.add(playerId);
             cancelEvent.emit();
 
             const targetPlayerName = room.getPlayer(team.players[index]).name; 
             const remainingVotesNeeded = cancelEvent.threshold; 
-            
+
             if (remainingVotesNeeded > 0) { 
                 // "notificationText" or "statusMessage" is clearer than "text2"
                 const remainingVotesMessage = i18n.t('playersToVote', { count: remainingVotesNeeded }); 
-            
+
                 for (const teamPlayerIds of players) { 
                     for (const currentId of teamPlayerIds) {
                         const votingConfirmation = playerId === currentId 
                             ? `VOCẼ VOTOU EM ${playerId !== team.players[index] ? targetPlayerName : 'VOCẼ'} PARA CAPITÃO. ` 
                             : ''; 
-                            
+
                         sendAnnouncement(votingConfirmation + remainingVotesMessage, currentId, 'INFORMATION'); 
                     } 
                 } 
@@ -600,7 +665,7 @@ HaxballJS().then((HBInit) => {
         else if (command == COMMANDS.SELECT_TEAM) {
             const team = team_by_player.get(playerId);
             if (!team) return 'Você não faz parte de um time no momento';
-            
+
             if (teams.indexOf(team) !== configuringTeamIndex) return 'Não é o seu momento de escolher uma seleção';
 
             if (playerId !== team.captain) return 'Você não é o capitão do time';
@@ -608,7 +673,7 @@ HaxballJS().then((HBInit) => {
             if (team.metadata.name !== 'DEFAULT') return 'Você já escolheu uma seleção';
 
             if (args.length === 0) return 'Nenhum nome foi fornecido';
-            
+
             const teamName = formatTeamName(kitNameArray, args.join(' '));
 
             if (!teamName) return 'Esse time não está na lista. Por favor, escolha outro';
@@ -620,14 +685,15 @@ HaxballJS().then((HBInit) => {
         }
         else if (command == COMMANDS.DEFINITIVE_RESET) {
             reset();
+            update('RECOMEÇANDO, ESTÁ PREPARADO?')
         }
         else if (command == COMMANDS.CONFIGURE) {
             if (args.length === 0) return 'Nenhum argumento foi fornecido';
-            
+
             for (const arg of args) {
                 const index = arg.indexOf('=');
                 if (!index) continue;
-                
+
                 const name = arg.substring(0, index);
                 const value = arg.substring(index + 1);
 
@@ -642,7 +708,7 @@ HaxballJS().then((HBInit) => {
                     if (Number.isNaN(num)) return setError('Argumento não é um número');
 
                     if (num < 1) return setError('Argumento precisa ser maior ou igual a 1');
-                    
+
                     room.setScoreLimit(num);
                 }
                 else if (name == 'time-limit') {
@@ -650,7 +716,7 @@ HaxballJS().then((HBInit) => {
                     if (Number.isNaN(num)) return setError('Argumento não é um número');
 
                     if (num < 1) return setError('Argumento precisa ser maior ou igual a 1');
-                    
+
                     room.setTimeLimit(num);
                 }
                 else return setError('Argumento não reconhecido');
@@ -674,14 +740,14 @@ HaxballJS().then((HBInit) => {
         }
 
         const playerTeam = team_by_player.get(playerObject.id);
-        const teamStatusMessage = playerTeam && playerTeam.lost ? '[DERROTADO] ' : '';
+        const teamStatusMessage = playerTeam && playerTeam.lost ? '[ELIMINADO] ' : '';
         const captainMessage = playerTeam && playerObject.id === playerTeam.captain ? '[C]' : '';
 
         let customColor;
         if (playerTeam) {
             customColor = getPrimaryKitColor(playerTeam.metadata.name);
         }
-        
+
         sendAnnouncement(`${teamStatusMessage}${captainMessage} ${playerObject.name}: ${message}`, null, 'DEFAULT', customColor);
 
         return false;

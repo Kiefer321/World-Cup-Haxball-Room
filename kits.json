@@ -1,0 +1,65 @@
+{
+  "tournament": "FIFA World Cup 2026",
+  "total_teams": 48,
+  "teams": {
+    "Mexico": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x006847", "0x006847", "0xCE1126"] },
+    "South Africa": { "angle": 90, "avatarColor": "0x000000", "discColors": ["0xFFCD00", "0x007A4D"] },
+    "South Korea": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0xCD2E3A", "0xCD2E3A", "0x0047A0"] },
+    "Czechia": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x11457E", "0xD7141A"] },
+    
+    "Canada": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0xDA291C"] },
+    "Bosnia and Herzegovina": { "angle": 45, "avatarColor": "0xFFD700", "discColors": ["0x002F6C"] },
+    "Qatar": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x8A1538"] },
+    "Switzerland": { "angle": 90, "avatarColor": "0xFFFFFF", "discColors": ["0xDA291C"] },
+    
+    "Brazil": { "angle": 0, "avatarColor": "0x002776", "discColors": ["0xFEDF00", "0xFEDF00", "0x009739"] },
+    "Morocco": { "angle": 0, "avatarColor": "0x006233", "discColors": ["0xC1272D"] },
+    "Haiti": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x00209F", "0xD21034"] },
+    "Scotland": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x002B7F"] },
+    
+    "United States": { "angle": 90, "avatarColor": "0x002868", "discColors": ["0xFFFFFF", "0xBF0A30"] },
+    "Paraguay": { "angle": 90, "avatarColor": "0x0038A8", "discColors": ["0xD52B1E", "0xFFFFFF"] },
+    "Australia": { "angle": 0, "avatarColor": "0x002B7F", "discColors": ["0xFFCD00", "0x00843D"] },
+    "Türkiye": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0xE30A17"] },
+    
+    "Germany": { "angle": 0, "avatarColor": "0x000000", "discColors": ["0xFFFFFF", "0xFFFFFF", "0xFFCC00"] },
+    "Curaçao": { "angle": 0, "avatarColor": "0xF7D117", "discColors": ["0x002B7F"] },
+    "Ivory Coast": { "angle": 90, "avatarColor": "0x009E60", "discColors": ["0xF77F00", "0xFFFFFF"] },
+    "Ecuador": { "angle": 0, "avatarColor": "0x003087", "discColors": ["0xFFDD00", "0xED1C24"] },
+    
+    "Netherlands": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x21468B", "0x21468B", "0xEA3E2B"] },
+    "Japan": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x001E62", "0x001E62", "0xBC002D"] },
+    "Sweden": { "angle": 0, "avatarColor": "0x006AA7", "discColors": ["0xFECC00"] },
+    "Tunisia": { "angle": 0, "avatarColor": "0xE2011A", "discColors": ["0xFFFFFF"] },
+    
+    "Belgium": { "angle": 90, "avatarColor": "0xFFCC00", "discColors": ["0xE30613", "0x000000"] },
+    "Egypt": { "angle": 0, "avatarColor": "0x000000", "discColors": ["0xC8102E", "0xFFFFFF"] },
+    "Iran": { "angle": 90, "avatarColor": "0xDA291C", "discColors": ["0xFFFFFF", "0x239E46"] },
+    "New Zealand": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x000000"] },
+    
+    "Spain": { "angle": 0, "avatarColor": "0xF1BF00", "discColors": ["0xAA151B"] },
+    "Cabo Verde": { "angle": 0, "avatarColor": "0xCE1126", "discColors": ["0x003893", "0xFFFFFF"] },
+    "Saudi Arabia": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x006C35"] },
+    "Uruguay": { "angle": 0, "avatarColor": "0xFCD116", "discColors": ["0x0081C8", "0xFFFFFF"] },
+    
+    "France": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0x002395", "0x002395", "0xED2939"] },
+    "Senegal": { "angle": 90, "avatarColor": "0xE31B23", "discColors": ["0x00853F", "0xFDEF42"] },
+    "Iraq": { "angle": 0, "avatarColor": "0x007A3D", "discColors": ["0xFFFFFF"] },
+    "Norway": { "angle": 0, "avatarColor": "0x00205B", "discColors": ["0xBA0C2F", "0xFFFFFF"] },
+    
+    "Argentina": { "angle": 90, "avatarColor": "0xF6B40E", "discColors": ["0x74ACDF", "0xFFFFFF"] },
+    "Algeria": { "angle": 90, "avatarColor": "0xD21034", "discColors": ["0x006633", "0xFFFFFF"] },
+    "Austria": { "angle": 0, "avatarColor": "0xFFFFFF", "discColors": ["0xED2939"] },
+    "Jordan": { "angle": 0, "avatarColor": "0x007A3D", "discColors": ["0xFFFFFF", "0xCE1126"] },
+    
+    "Portugal": { "angle": 90, "avatarColor": "0x006600", "discColors": ["0xFF0000", "0xFF0000", "0xFFFF00"] },
+    "DR Congo": { "angle": 45, "avatarColor": "0xFCE311", "discColors": ["0x007FFF", "0xCE1126"] },
+    "Uzbekistan": { "angle": 90, "avatarColor": "0x0099B5", "discColors": ["0xFFFFFF", "0x1EB53A"] },
+    "Colombia": { "angle": 0, "avatarColor": "0x003893", "discColors": ["0xFCD116", "0xFCD116", "0xCE1126"] },
+    
+    "England": { "angle": 0, "avatarColor": "0xCF142B", "discColors": ["0xFFFFFF", "0xFFFFFF", "0x002040"] },
+    "Croatia": { "angle": 45, "avatarColor": "0x171796", "discColors": ["0xFFFFFF", "0xFF0000"] },
+    "Ghana": { "angle": 0, "avatarColor": "0x000000", "discColors": ["0xFFCC00", "0xDD0000"] },
+    "Panama": { "angle": 0, "avatarColor": "0x00205B", "discColors": ["0xDA121A"] }
+  }
+}
